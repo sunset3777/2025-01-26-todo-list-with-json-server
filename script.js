@@ -36,12 +36,21 @@ addButton.addEventListener('click',addItem)
 ul.addEventListener('click', deleteItem);
 
 function deleteItem(e) {
-    e.preventDefault();
+    
 
     if (e.target.classList.contains('fa-times')) {
+        e.preventDefault();
+        
         const targetLi = e.target.closest('li');
-        targetLi.remove();
-
+        const checkbox = targetLi.querySelector('.todoList_input');
+        
+        if (checkbox.checked) {
+            targetLi.remove();
+            console.log('項目已刪除');
+        } else {
+            alert('請先勾選完成，才能刪除該事項！');
+            console.log('刪除失敗：事項未完成');
+        }
         console.log('項目已刪除');
     }
 }
