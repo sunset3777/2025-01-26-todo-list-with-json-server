@@ -54,3 +54,39 @@ function deleteItem(e) {
         console.log('項目已刪除');
     }
 }
+
+//新增切換完成已完成標籤
+
+const tabs = document .querySelectorAll ('#todolistTab a')
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        tabs.forEach(item => item.classList.remove('active'));
+        e.target.classList.add('active');
+
+        const status = e.target.getAttribute('data-status');
+        filterItems(status);
+    });
+});
+
+function filterItems(status) {
+    const items = ul.querySelectorAll('li');
+
+    items.forEach(item => {
+        const isChecked = item.querySelector('.todoList_input').checked;
+
+        switch (status) {
+            case 'all':
+                item.style.display = 'flex';
+                break;
+            case 'pending':
+                item.style.display = isChecked ? 'none' : 'flex';
+                break;
+            case 'completed':
+                item.style.display = isChecked ? 'flex' : 'none';
+                break;
+        }
+    });
+}
