@@ -1,74 +1,63 @@
 const myDataKey = 'todoListdata'
-let todoData = JSON.parse(localStorage.getItem('myDataKey')) || [];
-
+let todoData = JSON.parse(localStorage.getItem(myDataKey)) || [];
 
 //新增新的待辦事項
 const inputText = document.querySelector('#inputtext input')
 const addButton = document.querySelector('#inputtext a')
-
 const ul = document.querySelector('#list')
+let currentStatus = 'all';
+ul.addEventListener('click', handleListClick);
+
+render();
+
 
 function addItem(e){
     e.preventDefault();
 
-    if (inputText.value.trim ==='') {
+    if (inputText.value.trim() ==='') {
         alert('不能輸入空的待辦事項');
         return;
     }
 
-    // const li = document.createElement('li')
-
-    // li .innerHTML =
-    // `<label class="todoList_label">
-    // <input class="todoList_input" type="checkbox" value="true">
-    // <span>${inputText.value}</span>
-    // </label>
-    // <a href="#">
-    // <i class="fa-solid fa-times"></i>
-    // </a>`
-
-    // ul .appendChild(li);
-
-    // inputText.value ='';
-
-    // console.log('成功加入新待辦事項!');
-
     const item = {
         content: inputText.value,
-        clecked: false
+        checked: false
     }
 
     todoData.push(item)
     
-    saveData(todoData)
+    saveData(todoData);
+    render();
     
     inputText.value = '';
 
-    console.log('資料已更新，目前陣列長度：', todoData.length);
+    console.log('資料已更新');
 }
 
 addButton.addEventListener('click',addItem)
 
 //新增刪除功能
-ul.addEventListener('click', deleteItem);
 
-function deleteItem(e) {
+function handleListClick(e) {
+    const index = e.target.getAttribute('data-index');
     
+    if (index === null) return;
 
     if (e.target.classList.contains('fa-times')) {
         e.preventDefault();
         
-        const targetLi = e.target.closest('li');
-        const checkbox = targetLi.querySelector('.todoList_input');
-        
-        if (checkbox.checked) {
-            targetLi.remove();
-            console.log('項目已刪除');
+        if (todoData[index].checked) {
+            todoData.splice(index, 1);
+            saveData(todoData);
+            render();
         } else {
             alert('請先勾選完成，才能刪除該事項！');
-            console.log('刪除失敗：事項未完成');
         }
-        console.log('項目已刪除');
+    } 
+    
+    else if (e.target.classList.contains('todoList_input')) {
+        todoData[index].checked = e.target.checked;
+        saveData(todoData);
     }
 }
 
@@ -83,30 +72,10 @@ tabs.forEach(tab => {
         tabs.forEach(item => item.classList.remove('active'));
         e.target.classList.add('active');
 
-        const status = e.target.getAttribute('data-status');
-        filterItems(status);
+        currentStatus = e.target.getAttribute('data-status');
+        render();
     });
 });
-
-function filterItems(status) {
-    const items = ul.querySelectorAll('li');
-
-    items.forEach(item => {
-        const isChecked = item.querySelector('.todoList_input').checked;
-
-        switch (status) {
-            case 'all':
-                item.style.display = 'flex';
-                break;
-            case 'pending':
-                item.style.display = isChecked ? 'none' : 'flex';
-                break;
-            case 'completed':
-                item.style.display = isChecked ? 'flex' : 'none';
-                break;
-        }
-    });
-}
 
 //新增localstorage
 
@@ -118,4 +87,25 @@ function saveData(arr) {
     console.log ("存入新資料到本地"+ dataStr)
 }
 
-//render渲染 localstorage
+//render 渲染 localstorage
+    function render(){
+        let str='';
+        todoData.forEach((item , index )=> {
+
+            if (currentStatus === 'pending' && item.checked) return;
+            if (currentStatus === 'completed' && !item.checked) return;
+
+            const isChecked = item.checked ? 'checked' : '';
+            
+            str += `<li>
+            <label class="todoList_label">
+            <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}">
+            <span>${item.content}</span>
+            </label>
+            <a href="#">
+            <i class="fa-solid fa-times" data-index="${index}"></i>
+            </a>
+            </li>`
+        });
+        ul.innerHTML = str;
+    }
