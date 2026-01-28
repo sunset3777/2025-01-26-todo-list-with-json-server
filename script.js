@@ -1,5 +1,8 @@
 const myDataKey = 'todoListdata'
-let todoData = JSON.parse(localStorage.getItem(myDataKey)) || [];
+//let todoData = JSON.parse(localStorage.getItem(myDataKey)) || [];
+
+let todoData = [];
+let isLoading = false;
 
 //新增新的待辦事項
 const inputText = document.querySelector('#inputtext input')

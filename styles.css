@@ -394,7 +394,7 @@ nav ul a span {
   padding-left: 16px;
 }
 
-.inputBox a {
+.inputBox button {
   display: block;
   width: 40px;
   height: 39px;
@@ -496,15 +496,20 @@ nav ul a span {
   margin-bottom: 17px;
 }
 
-.todoList_list .todoList_items li a {
+.todoList_list .todoList_items li button {
   margin-left: 17px;
   display: block;
   font-size: 14px;
   color: #333333;
   opacity: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
 }
 
-.todoList_list .todoList_items li:hover a {
+.todoList_list .todoList_items li:hover button {
   opacity: 1;
 }
 
@@ -522,8 +527,13 @@ nav ul a span {
   font-size: 0.875rem;
 }
 
-.todoList_list .todoList_statistics a {
+.todoList_list .todoList_statistics button {
   color: #9F9A91;
   font-size: 0.875rem;
   text-decoration: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
 }
