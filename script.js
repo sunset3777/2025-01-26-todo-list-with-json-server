@@ -1,18 +1,22 @@
-const itemKey = 'todoListData'
-let todoData = JSON.parse(localStorage.getItem(itemKey)) || [];
+const myDataKey = 'todoListdata'
+//let todoData = JSON.parse(localStorage.getItem(myDataKey)) || [];
+
+let todoData = [];
+let isLoading = false;
 
 //新增新的待辦事項
-const inputText = document.querySelector('#inputText input')
-const addButton = document.querySelector('#inputText button')
-const todoListElement = document.querySelector('#list')
-const workNumElement = document.querySelector('.todoList_statistics p');
+const inputText = document.querySelector('#inputtext input')
+const addButton = document.querySelector('#inputtext a')
+const ul = document.querySelector('#list')
 let currentStatus = 'all';
-todoListElement.addEventListener('click', handleListClick);
+ul.addEventListener('click', handleListClick);
 
 render();
 
 
 function addItem(e){
+    e.preventDefault();
+
     if (inputText.value.trim() ==='') {
         alert('不能輸入空的待辦事項');
         return;
@@ -29,6 +33,8 @@ function addItem(e){
     render();
     
     inputText.value = '';
+
+    console.log('資料已更新');
 }
 
 addButton.addEventListener('click',addItem)
@@ -36,48 +42,40 @@ addButton.addEventListener('click',addItem)
 //新增刪除功能
 
 function handleListClick(e) {
-    const deleteIcon = e.target.closest('.fa-times[data-index]');
-    const checkbox = e.target.closest('.todoList_input[data-index]');
-    const deleteBtn = e.target.closest('button[data-index]');
-
-    if (deleteIcon) {
-    const index = Number(deleteIcon.dataset.index);
-
-    if (!todoData[index].checked) {
-      alert('請先勾選完成，才能刪除該事項！');
-      return;
-    }
-
-    todoData.splice(index, 1);
-    saveData(todoData);
-    render();
-    return;
-    }
+    const index = e.target.getAttribute('data-index');
     
-    if (checkbox) {
-    const index = Number(checkbox.dataset.index);
-    todoData[index].checked = checkbox.checked;
-    saveData(todoData);
-    render(); 
+    if (index === null) return;
+
+    if (e.target.classList.contains('fa-times')) {
+        e.preventDefault();
+        
+        if (todoData[index].checked) {
+            todoData.splice(index, 1);
+            saveData(todoData);
+            render();
+        } else {
+            alert('請先勾選完成，才能刪除該事項！');
+        }
+    } 
+    
+    else if (e.target.classList.contains('todoList_input')) {
+        todoData[index].checked = e.target.checked;
+        saveData(todoData);
     }
 }
 
 //新增切換完成已完成標籤
 
-const tabs = document.querySelectorAll('#todoListTab a')
+const tabs = document .querySelectorAll ('#todolistTab a')
 
 tabs.forEach(tab => {
     tab.addEventListener('click', function(e) {
-        const targetTab = e.target.closest('a');
-        
-        if (!targetTab) return;
-
-        e.preventDefault(); 
+        e.preventDefault();
 
         tabs.forEach(item => item.classList.remove('active'));
-        targetTab.classList.add('active');
+        e.target.classList.add('active');
 
-        currentStatus = targetTab.getAttribute('data-status');
+        currentStatus = e.target.getAttribute('data-status');
         render();
     });
 });
@@ -86,36 +84,31 @@ tabs.forEach(tab => {
 
 function saveData(arr) {
     const dataStr = JSON.stringify(arr)
-    localStorage.setItem('itemKey', dataStr )
+    localStorage.setItem('todoListdata', dataStr )
+    localStorage.getItem('todoListdata')
+    
+    console.log ("存入新資料到本地"+ dataStr)
 }
 
 //render 渲染 localstorage
     function render(){
-        let template='';
-        let pendingCount = 0;
+        let str='';
         todoData.forEach((item , index )=> {
-            if (!item.checked) {
-            pendingCount++;
-        }
 
             if (currentStatus === 'pending' && item.checked) return;
             if (currentStatus === 'completed' && !item.checked) return;
 
             const isChecked = item.checked ? 'checked' : '';
             
-            template += `<li>
-                            <label class="todoList_label">
-                                <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}">
-                                <span>${item.content}</span>
-                            </label>
-                        <button type="button" data-index="${index}">
-                            <i class="fa-solid fa-times" data-index="${index}"></i>
-                        </button>
-                        </li>`
+            str += `<li>
+            <label class="todoList_label">
+            <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}">
+            <span>${item.content}</span>
+            </label>
+            <a href="#">
+            <i class="fa-solid fa-times" data-index="${index}"></i>
+            </a>
+            </li>`
         });
-        todoListElement.innerHTML = template;
-
-        if (workNumElement) {
-        workNumElement.textContent = `${pendingCount} 個待完成項目`;
-    }
+        ul.innerHTML = str;
     }
