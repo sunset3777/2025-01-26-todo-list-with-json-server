@@ -1,0 +1,22 @@
+{
+  "name": "2025-01-26-todo-list-with-json-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "json-server --watch db.json --port 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunset3777/2025-01-26-todo-list-with-json-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sunset3777/2025-01-26-todo-list-with-json-server/issues"
+  },
+  "homepage": "https://github.com/sunset3777/2025-01-26-todo-list-with-json-server#readme"
+}
