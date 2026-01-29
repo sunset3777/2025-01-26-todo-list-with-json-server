@@ -10,14 +10,10 @@ const workNumElement = document.querySelector('.todoList_statistics p');
 let currentStatus = 'all';
 todoListElement.addEventListener('click', handleListClick);
 
-// render();
-
+//api CRUD
 function fetchTodos() { 
-    return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); }); 
-}
-
-fetchTodos()
-  .then((data) => { 
+    return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); })
+    .then((data) => { 
     todoData = data.map(item => {
       return {
         id: item.id,
@@ -27,30 +23,59 @@ fetchTodos()
       };
     });
     render();
-  })
-  .catch((error) => {
+  }); 
+}
+
+fetchTodos().catch((error) => {
     console.error('API 發生錯誤', error);
   });
 
+  //api addItem
+  function createTodo(todo) {
+    return fetch('http://localhost:3000/todos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(todo)
+  })
+  .then(res => res.json());
+}
+
+
+
 
 function addItem(e){
+  e.preventDefault();
+
   if (inputText.value.trim() ==='') {
     alert('不能輸入空的待辦事項');
     return;
   }
-  
-  const item = {
-    content: inputText.value,
-    checked: false
-  }
 
-    todoData.push(item)
-    
-    saveData(todoData);
-    render();
-    
+  const todo = {
+    content: inputText.value,
+    completed :false
+  }
+  createTodo(todo)
+  .then((newTodo) => {
+    console.log(newTodo);
     inputText.value = '';
-}
+    fetchTodos();
+    });
+  }
+  // const item = {
+  //   content: inputText.value,
+  //   checked: false
+  // }
+
+//     todoData.push(item)
+    
+//     saveData(todoData);
+//     render();
+    
+//     inputText.value = '';
+
 
 addButton.addEventListener('click',addItem)
 
