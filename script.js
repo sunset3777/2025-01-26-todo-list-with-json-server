@@ -54,24 +54,50 @@ function addItem(e){
 
 addButton.addEventListener('click',addItem)
 
+// api delete
+
+function deleteTodo(id) {
+  return fetch(`http://localhost:3000/todos/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// deleteTodo(id).then((res) => {
+//   console.log('deleted', res.status, res.ok);
+// });
+
 //新增刪除功能
 
 function handleListClick(e) {
-    const deleteIcon = e.target.closest('.fa-times[data-index]');
+    const deleteIcon = e.target.closest('[data-action="delete"]');
     const checkbox = e.target.closest('.todoList_input[data-index]');
-    const deleteBtn = e.target.closest('button[data-index]');
 
     if (deleteIcon) {
-    const index = Number(deleteIcon.dataset.index);
+    const id = deleteIcon.dataset.id;
+    const target = todoData.find(t => String(t.id) === String(id));
 
-    if (!todoData[index].checked) {
+    if (!target) return;
+    if (!target.checked) {
       alert('請先勾選完成，才能刪除該事項！');
       return;
     }
 
-    todoData.splice(index, 1);
-    saveData(todoData);
-    render();
+    deleteTodo(id)
+    .then((res) => {
+      if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+      return fetchTodos();
+    })
+    .then((data) => {
+      todoData = data.map(item => ({
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      }));
+      render();
+    })
+    .catch(console.error);
+
     return;
     }
     
@@ -130,7 +156,7 @@ function saveData(arr) {
                                 <span>${item.content}</span>
                             </label>
                         <button type="button" data-index="${index}">
-                            <i class="fa-solid fa-times" data-index="${index}"></i>
+                            <i class="fa-solid fa-times" data-action="delete" data-id="${item.id}"></i>
                         </button>
                         </li>`
         });
