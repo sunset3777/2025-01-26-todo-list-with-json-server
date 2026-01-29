@@ -1,5 +1,3 @@
-const itemKey = 'todoListData'
-// let todoData = JSON.parse(localStorage.getItem(itemKey)) || [];
 let todoData = [];
 
 //新增新的待辦事項
@@ -97,15 +95,11 @@ function deleteTodo(id) {
   });
 }
 
-// deleteTodo(id).then((res) => {
-//   console.log('deleted', res.status, res.ok);
-// });
-
 //新增刪除功能
 
 function handleListClick(e) {
     const deleteIcon = e.target.closest('[data-action="delete"]');
-    const checkbox = e.target.closest('.todoList_input[data-index]');
+    const checkbox = e.target.closest('.todoList_input[data-id]');
 
     if (deleteIcon) {
     const id = deleteIcon.dataset.id;
@@ -158,7 +152,7 @@ function handleListClick(e) {
 
   .catch((err) => {
     console.error(err);
-    showError('更新失敗，請確認伺服器是否啟動（json-server / port 3000）');
+    showError('更新狀態失敗，請確認伺服器是否啟動（json-server / port 3000）');
   })
     return;
   } 
@@ -197,11 +191,6 @@ tabs.forEach(tab => {
 function setCreatingLoading(isLoading) {
   isCreating = isLoading;
   addButton.disabled = isLoading;
-}
-
-function saveData(arr) {
-    const dataStr = JSON.stringify(arr)
-    localStorage.setItem(itemKey, dataStr )
 }
 
 //render 渲染 localstorage
