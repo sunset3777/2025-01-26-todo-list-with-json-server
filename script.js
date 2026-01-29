@@ -1,5 +1,3 @@
-const itemKey = 'todoListData'
-// let todoData = JSON.parse(localStorage.getItem(itemKey)) || [];
 let todoData = [];
 
 //新增新的待辦事項
@@ -8,9 +6,16 @@ const addButton = document.querySelector('#inputText button')
 const todoListElement = document.querySelector('#list')
 const workNumElement = document.querySelector('.todoList_statistics p');
 let currentStatus = 'all';
+let isCreating = false;
+
 todoListElement.addEventListener('click', handleListClick);
 
-//api CRUD
+// render();
+
+function showError(message) {
+  alert(message);
+}
+
 function fetchTodos() { 
     return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); })
     .then((data) => { 
@@ -28,84 +33,136 @@ function fetchTodos() {
 
 fetchTodos().catch((error) => {
     console.error('API 發生錯誤', error);
+    showError('讀取失敗，請確認伺服器是否啟動（json-server / port 3000）');
   });
 
-  //api addItem
-  function createTodo(todo) {
-    return fetch('http://localhost:3000/todos', {
+  function createTodo(payload) {
+  return fetch('http://localhost:3000/todos', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(todo)
-  })
-  .then(res => res.json());
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 }
-
-
 
 
 function addItem(e){
   e.preventDefault();
-
   if (inputText.value.trim() ==='') {
     alert('不能輸入空的待辦事項');
     return;
   }
+  
+  const payload = {
+  content: inputText.value.trim(),
+  completed: false
+};
 
-  const todo = {
-    content: inputText.value,
-    completed :false
-  }
-  createTodo(todo)
-  .then((newTodo) => {
-    console.log(newTodo);
+setCreatingLoading(true);
+
+createTodo(payload)
+  .then((res) => {
+    if (!res.ok) throw new Error(`POST failed: ${res.status}`);
     inputText.value = '';
-    fetchTodos();
-    });
-  }
-  // const item = {
-  //   content: inputText.value,
-  //   checked: false
-  // }
-
-//     todoData.push(item)
-    
-//     saveData(todoData);
-//     render();
-    
-//     inputText.value = '';
-
+    return fetchTodos();
+  })
+  .then((data) => {
+    todoData = data.map(item => ({
+      id: item.id,
+      content: item.content,
+      completed: item.completed,
+      checked: item.completed
+    }));
+    render();
+  })
+  .catch((err) => {
+    console.error(err);
+    showError('新增失敗，請確認伺服器是否啟動（json-server / port 3000）');
+  })
+  .finally(() => {
+    setCreatingLoading(false);
+  });
+  return;
+}
 
 addButton.addEventListener('click',addItem)
+
+// api delete
+
+function deleteTodo(id) {
+  return fetch(`http://localhost:3000/todos/${id}`, {
+    method: 'DELETE'
+  });
+}
 
 //新增刪除功能
 
 function handleListClick(e) {
-    const deleteIcon = e.target.closest('.fa-times[data-index]');
-    const checkbox = e.target.closest('.todoList_input[data-index]');
-    const deleteBtn = e.target.closest('button[data-index]');
+    const deleteIcon = e.target.closest('[data-action="delete"]');
+    const checkbox = e.target.closest('.todoList_input[data-id]');
 
     if (deleteIcon) {
-    const index = Number(deleteIcon.dataset.index);
+    const id = deleteIcon.dataset.id;
+    const target = todoData.find(t => String(t.id) === String(id));
 
-    if (!todoData[index].checked) {
+    if (!target) return;
+    if (!target.checked) {
       alert('請先勾選完成，才能刪除該事項！');
       return;
     }
 
-    todoData.splice(index, 1);
-    saveData(todoData);
-    render();
+    deleteTodo(id)
+    .then((res) => {
+      if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+      return fetchTodos();
+    })
+    .then((data) => {
+      todoData = data.map(item => ({
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      }));
+      render();
+    })
+    .catch((error) => {
+      console.error('API 發生錯誤', error);
+      showError('刪除失敗，請確認伺服器是否啟動（json-server / port 3000）');
+    });
+
     return;
     }
     
     if (checkbox) {
-    const index = Number(checkbox.dataset.index);
-    todoData[index].checked = checkbox.checked;
-    saveData(todoData);
-    render(); 
-    }
+    const id = checkbox.dataset.id;
+    patchTodo(id, { completed: checkbox.checked })
+    .then((res) => {
+      if (!res.ok) throw new Error(`PATCH failed: ${res.status}`);
+      return fetchTodos();
+    })
+    .then((data) => {
+      todoData = data.map(item => ({
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      }));
+      render();
+  })
+
+  .catch((err) => {
+    console.error(err);
+    showError('更新狀態失敗，請確認伺服器是否啟動（json-server / port 3000）');
+  })
+    return;
+  } 
+}
+
+function patchTodo(id, payload) {
+  return fetch(`http://localhost:3000/todos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 }
 
 //新增切換完成已完成標籤
@@ -130,9 +187,9 @@ tabs.forEach(tab => {
 
 //新增localstorage
 
-function saveData(arr) {
-    const dataStr = JSON.stringify(arr)
-    localStorage.setItem(itemKey, dataStr )
+function setCreatingLoading(isLoading) {
+  isCreating = isLoading;
+  addButton.disabled = isLoading;
 }
 
 //render 渲染 localstorage
@@ -151,11 +208,11 @@ function saveData(arr) {
             
             template += `<li>
                             <label class="todoList_label">
-                                <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}">
+                                <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}" data-id="${item.id}">
                                 <span>${item.content}</span>
                             </label>
                         <button type="button" data-index="${index}">
-                            <i class="fa-solid fa-times" data-index="${index}"></i>
+                            <i class="fa-solid fa-times" data-action="delete" data-id="${item.id}"></i>
                         </button>
                         </li>`
         });
