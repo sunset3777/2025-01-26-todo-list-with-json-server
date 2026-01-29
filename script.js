@@ -17,11 +17,8 @@ function showError(message) {
 }
 
 function fetchTodos() { 
-    return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); }); 
-}
-
-fetchTodos()
-  .then((data) => { 
+    return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); })
+    .then((data) => { 
     todoData = data.map(item => {
       return {
         id: item.id,
@@ -31,8 +28,10 @@ fetchTodos()
       };
     });
     render();
-  })
-  .catch((error) => {
+  }); 
+}
+
+fetchTodos().catch((error) => {
     console.error('API 發生錯誤', error);
     showError('讀取失敗，請確認伺服器是否啟動（json-server / port 3000）');
   });
