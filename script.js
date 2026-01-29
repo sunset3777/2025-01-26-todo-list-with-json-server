@@ -32,24 +32,43 @@ fetchTodos()
     console.error('API 發生錯誤', error);
   });
 
+  function createTodo(payload) {
+  return fetch('http://localhost:3000/todos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
+
 
 function addItem(e){
+  e.preventDefault();
   if (inputText.value.trim() ==='') {
     alert('不能輸入空的待辦事項');
     return;
   }
   
-  const item = {
-    content: inputText.value,
-    checked: false
-  }
+  const payload = {
+  content: inputText.value.trim(),
+  completed: false
+};
 
-    todoData.push(item)
-    
-    saveData(todoData);
-    render();
-    
+createTodo(payload)
+  .then((res) => {
+    if (!res.ok) throw new Error(`POST failed: ${res.status}`);
     inputText.value = '';
+    return fetchTodos();
+  })
+  .then((data) => {
+    todoData = data.map(item => ({
+      id: item.id,
+      content: item.content,
+      completed: item.completed,
+      checked: item.completed
+    }));
+    render();
+  })
+  .catch(console.error);
 }
 
 addButton.addEventListener('click',addItem)
@@ -102,11 +121,34 @@ function handleListClick(e) {
     }
     
     if (checkbox) {
-    const index = Number(checkbox.dataset.index);
-    todoData[index].checked = checkbox.checked;
-    saveData(todoData);
-    render(); 
-    }
+    const id = checkbox.dataset.id;
+    patchTodo(id, { completed: checkbox.checked })
+    .then((res) => {
+      if (!res.ok) throw new Error(`PATCH failed: ${res.status}`);
+      return fetchTodos();
+    })
+    .then((data) => {
+      todoData = data.map(item => ({
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      }));
+      render();
+      
+  })
+
+  .catch(console.error);
+    return;
+  } 
+}
+
+function patchTodo(id, payload) {
+  return fetch(`http://localhost:3000/todos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 }
 
 //新增切換完成已完成標籤
@@ -152,7 +194,7 @@ function saveData(arr) {
             
             template += `<li>
                             <label class="todoList_label">
-                                <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}">
+                                <input class="todoList_input" type="checkbox" ${isChecked} data-index="${index}" data-id="${item.id}">
                                 <span>${item.content}</span>
                             </label>
                         <button type="button" data-index="${index}">
