@@ -1,9 +1,3 @@
 {
-  "todos": [
-    {
-      "id": "0136",
-      "content": "123",
-      "completed": false
-    }
-  ]
+  "todos": []
 }

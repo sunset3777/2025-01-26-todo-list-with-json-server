@@ -8,9 +8,15 @@ const addButton = document.querySelector('#inputText button')
 const todoListElement = document.querySelector('#list')
 const workNumElement = document.querySelector('.todoList_statistics p');
 let currentStatus = 'all';
+let isCreating = false;
+
 todoListElement.addEventListener('click', handleListClick);
 
 // render();
+
+function showError(message) {
+  alert(message);
+}
 
 function fetchTodos() { 
     return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); }); 
@@ -30,6 +36,7 @@ fetchTodos()
   })
   .catch((error) => {
     console.error('API 發生錯誤', error);
+    showError('讀取失敗，請確認伺服器是否啟動（json-server / port 3000）');
   });
 
   function createTodo(payload) {
@@ -53,6 +60,8 @@ function addItem(e){
   completed: false
 };
 
+setCreatingLoading(true);
+
 createTodo(payload)
   .then((res) => {
     if (!res.ok) throw new Error(`POST failed: ${res.status}`);
@@ -68,7 +77,14 @@ createTodo(payload)
     }));
     render();
   })
-  .catch(console.error);
+  .catch((err) => {
+    console.error(err);
+    showError('新增失敗，請確認伺服器是否啟動（json-server / port 3000）');
+  })
+  .finally(() => {
+    setCreatingLoading(false);
+  });
+  return;
 }
 
 addButton.addEventListener('click',addItem)
@@ -115,7 +131,10 @@ function handleListClick(e) {
       }));
       render();
     })
-    .catch(console.error);
+    .catch((error) => {
+      console.error('API 發生錯誤', error);
+      showError('刪除失敗，請確認伺服器是否啟動（json-server / port 3000）');
+    });
 
     return;
     }
@@ -135,10 +154,12 @@ function handleListClick(e) {
         checked: item.completed
       }));
       render();
-      
   })
 
-  .catch(console.error);
+  .catch((err) => {
+    console.error(err);
+    showError('更新失敗，請確認伺服器是否啟動（json-server / port 3000）');
+  })
     return;
   } 
 }
@@ -172,6 +193,11 @@ tabs.forEach(tab => {
 });
 
 //新增localstorage
+
+function setCreatingLoading(isLoading) {
+  isCreating = isLoading;
+  addButton.disabled = isLoading;
+}
 
 function saveData(arr) {
     const dataStr = JSON.stringify(arr)
