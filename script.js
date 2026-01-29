@@ -1,5 +1,6 @@
 const itemKey = 'todoListData'
-let todoData = JSON.parse(localStorage.getItem(itemKey)) || [];
+// let todoData = JSON.parse(localStorage.getItem(itemKey)) || [];
+let todoData = [];
 
 //新增新的待辦事項
 const inputText = document.querySelector('#inputText input')
@@ -9,27 +10,72 @@ const workNumElement = document.querySelector('.todoList_statistics p');
 let currentStatus = 'all';
 todoListElement.addEventListener('click', handleListClick);
 
-render();
+//api CRUD
+function fetchTodos() { 
+    return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); })
+    .then((data) => { 
+    todoData = data.map(item => {
+      return {
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      };
+    });
+    render();
+  }); 
+}
+
+fetchTodos().catch((error) => {
+    console.error('API 發生錯誤', error);
+  });
+
+  //api addItem
+  function createTodo(todo) {
+    return fetch('http://localhost:3000/todos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(todo)
+  })
+  .then(res => res.json());
+}
+
+
 
 
 function addItem(e){
-    if (inputText.value.trim() ==='') {
-        alert('不能輸入空的待辦事項');
-        return;
-    }
+  e.preventDefault();
 
-    const item = {
-        content: inputText.value,
-        checked: false
-    }
+  if (inputText.value.trim() ==='') {
+    alert('不能輸入空的待辦事項');
+    return;
+  }
 
-    todoData.push(item)
-    
-    saveData(todoData);
-    render();
-    
+  const todo = {
+    content: inputText.value,
+    completed :false
+  }
+  createTodo(todo)
+  .then((newTodo) => {
+    console.log(newTodo);
     inputText.value = '';
-}
+    fetchTodos();
+    });
+  }
+  // const item = {
+  //   content: inputText.value,
+  //   checked: false
+  // }
+
+//     todoData.push(item)
+    
+//     saveData(todoData);
+//     render();
+    
+//     inputText.value = '';
+
 
 addButton.addEventListener('click',addItem)
 
@@ -86,7 +132,7 @@ tabs.forEach(tab => {
 
 function saveData(arr) {
     const dataStr = JSON.stringify(arr)
-    localStorage.setItem('itemKey', dataStr )
+    localStorage.setItem(itemKey, dataStr )
 }
 
 //render 渲染 localstorage
