@@ -16,31 +16,33 @@ function fetchTodos() {
     return fetch('http://localhost:3000/todos') .then((response) => { return response.json(); }); 
 }
 
-fetchTodos().then((data) => { 
-    todoData = data.map( item => {
-        return {
-            id: item.id,
-            content: item.content,
-            completed: item.completed,
-            checked: item.completed
-        }
+fetchTodos()
+  .then((data) => { 
+    todoData = data.map(item => {
+      return {
+        id: item.id,
+        content: item.content,
+        completed: item.completed,
+        checked: item.completed
+      };
     });
     render();
-    console.log(data); 
-    console.log(todoData[0]);
-});
+  })
+  .catch((error) => {
+    console.error('API 發生錯誤', error);
+  });
 
 
 function addItem(e){
-    if (inputText.value.trim() ==='') {
-        alert('不能輸入空的待辦事項');
-        return;
-    }
-
-    const item = {
-        content: inputText.value,
-        checked: false
-    }
+  if (inputText.value.trim() ==='') {
+    alert('不能輸入空的待辦事項');
+    return;
+  }
+  
+  const item = {
+    content: inputText.value,
+    checked: false
+  }
 
     todoData.push(item)
     
